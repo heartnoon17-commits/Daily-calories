@@ -368,7 +368,8 @@ function updateSummary() {
     summaryDiv.innerHTML = message;
 }
 
-function clearAll() {
+<script>
+    function clearAll() {
     if (confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด?")) {
         foods = [];
         tdeeValue = 0;
@@ -378,6 +379,7 @@ function clearAll() {
         document.getElementById("result").innerText = "กรอกข้อมูลแล้วกดคำนวณ";
     }
 }
+</script>    
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
@@ -386,6 +388,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 
