@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เว็บแอปคำนวณแคลอรี่ + ล็อกอิน</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 520px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #16a34a;
+        }
+        .danger {
+            background-color: #ef4444;
+        }
+        .danger:hover {
+            background-color: #dc2626;
+        }
+        .result, .summary {
+            margin-top: 15px;
+            padding: 15px;
+            background: #ecfdf5;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .food-list {
+            margin-top: 10px;
+        }
+        .food-item {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .food-item button {
+            background: #ef4444;
+            padding: 6px 10px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 🔐 ระบบผู้ใช้ -->
+    <div id="authSection">
+        <h2>🔐 ระบบผู้ใช้</h2>
+
+        <label>ชื่อผู้ใช้</label>
+        <input type="text" id="username" placeholder="เช่น natapong">
+
+        <label>รหัสผ่าน</label>
+        <input type="password" id="password" placeholder="********">
+
+        <button onclick="register()">สมัครสมาชิก</button>
+        <button onclick="login()">เข้าสู่ระบบ</button>
+
+        <div id="authMessage" style="margin-top:10px; color:red;"></div>
+    </div>
+
+    <!-- 🥗 แอปคำนวณแคลอรี่ -->
+    <div id="appSection" class="hidden">
+        <h2>🥗 คำนวณแคลอรี่ต่อวัน</h2>
+        <p style="text-align:center;">ผู้ใช้: <strong id="currentUser"></strong></p>
+        <button class="danger" onclick="logout()">ออกจากระบบ</button>
+
+        <label>เพศ</label>
+        <select id="gender">
+            <option value="male">ชาย</option>
+            <option value="female">หญิง</option>
+        </select>
+
+        <label>อายุ (ปี)</label>
+        <input type="number" id="age" placeholder="เช่น 20">
+
+        <label>ส่วนสูง (ซม.)</label>
+        <input type="number" id="height" placeholder="เช่น 170">
+
+        <label>น้ำหนัก (กก.)</label>
+        <input type="number" id="weight" placeholder="เช่น 65">
+
+        <label>ระดับกิจกรรม</label>
+        <select id="activity">
+            <option value="1.2">นั่งทำงาน ไม่ค่อยออกกำลังกาย</option>
+            <option value="1.375">ออกกำลังกายเบา ๆ (1–3 วัน/สัปดาห์)</option>
+            <option value="1.55">ออกกำลังกายปานกลาง (3–5 วัน/สัปดาห์)</option>
+            <option value="1.725">ออกกำลังกายหนัก (6–7 วัน/สัปดาห์)</option>
+            <option value="1.9">ออกกำลังกายหนักมาก (งานใช้แรง + ออกกำลังกาย)</option>
+        </select>
+
+        <button onclick="calculateCalories()">คำนวณแคลอรี่</button>
+
+        <div class="result" id="result">กรอกข้อมูลแล้วกดคำนวณ</div>
+
+        <hr>
+
+        <h3>🍽️ บันทึกอาหารแต่ละมื้อ</h3>
+
+        <label>ชื่ออาหาร</label>
+        <input type="text" id="foodName" placeholder="เช่น ข้าวกะเพราไก่">
+
+        <label>แคลอรี่ (kcal)</label>
+        <input type="number" id="foodCalories" placeholder="เช่น 550">
+
+        <label>มื้ออาหาร</label>
+        <select id="mealType">
+            <option value="เช้า">เช้า</option>
+            <option value="กลางวัน">กลางวัน</option>
+            <option value="เย็น">เย็น</option>
+            <option value="ของว่าง">ของว่าง</option>
+        </select>
+
+        <button onclick="addFood()">เพิ่มอาหาร</button>
+
+        <div class="food-list" id="foodList"></div>
+
+        <div class="summary" id="summary">
+            🔢 แคลอรี่รวมวันนี้: 0 kcal
+        </div>
+
+        <button class="danger" onclick="clearAll()">ล้างข้อมูลทั้งหมด</button>
+    </div>
+
+</div>
+
+<script>
+let currentUser = null;
+let foods = [];
+let tdeeValue = 0;
+
+// ================= ระบบผู้ใช้ =================
+
+function register() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        showAuthMessage("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
+        return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+    if (users[username]) {
+        showAuthMessage("ชื่อผู้ใช้นี้มีอยู่แล้ว");
+        return;
+    }
+
+    users[username] = password; // (เพื่อการเรียนรู้เท่านั้น ยังไม่เข้ารหัส)
+    localStorage.setItem("users", JSON.stringify(users));
+    showAuthMessage("สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ", "green");
+}
+
+function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+    if (!users[username] || users[username] !== password) {
+        showAuthMessage("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+        return;
+    }
+
+    currentUser = username;
+    localStorage.setItem("currentUser", currentUser);
+    loadUserData();
+    showApp();
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem("currentUser");
+    showAuth();
+}
+
+function showAuthMessage(msg, color = "red") {
+    const el = document.getElementById("authMessage");
+    el.innerText = msg;
+    el.style.color = color;
+}
+
+function showApp() {
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("appSection").classList.remove("hidden");
+    document.getElementById("currentUser").innerText = currentUser;
+}
+
+function showAuth() {
+    document.getElementById("authSection").classList.remove("hidden");
+    document.getElementById("appSection").classList.add("hidden");
+}
+
+// ================= โหลดข้อมูลผู้ใช้ =================
+
+window.onload = function() {
+    const savedUser = localStorage.getItem("currentUser");
+    if (savedUser) {
+        currentUser = savedUser;
+        loadUserData();
+        showApp();
+    }
+};
+
+function loadUserData() {
+    const data = JSON.parse(localStorage.getItem(`data_${currentUser}`) || "{}");
+    foods = data.foods || [];
+    tdeeValue = data.tdee || 0;
+    renderFoodList();
+    updateSummary();
+}
+
+// ================= แอปคำนวณแคลอรี่ =================
+
+function saveUserData() {
+    const data = {
+        foods: foods,
+        tdee: tdeeValue
+    };
+    localStorage.setItem(`data_${currentUser}`, JSON.stringify(data));
+}
+
+function calculateCalories() {
+    const gender = document.getElementById("gender").value;
+    const age = parseFloat(document.getElementById("age").value);
+    const height = parseFloat(document.getElementById("height").value);
+    const weight = parseFloat(document.getElementById("weight").value);
+    const activity = parseFloat(document.getElementById("activity").value);
+    const resultDiv = document.getElementById("result");
+
+    if (!age || !height || !weight) {
+        resultDiv.innerText = "⚠️ กรุณากรอกข้อมูลให้ครบถ้วน";
+        return;
+    }
+
+    let bmr;
+    if (gender === "male") {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    }
+
+    const tdee = bmr * activity;
+    tdeeValue = tdee;
+
+    resultDiv.innerHTML = `
+        🔥 BMR: ${bmr.toFixed(0)} kcal/วัน<br>
+        ⚡ TDEE: ${tdee.toFixed(0)} kcal/วัน
+    `;
+
+    saveUserData();
+    updateSummary();
+}
+
+function addFood() {
+    const name = document.getElementById("foodName").value.trim();
+    const calories = parseFloat(document.getElementById("foodCalories").value);
+    const meal = document.getElementById("mealType").value;
+
+    if (!name || !calories) {
+        alert("กรุณากรอกชื่ออาหารและแคลอรี่");
+        return;
+    }
+
+    foods.push({ name, calories, meal });
+    document.getElementById("foodName").value = "";
+    document.getElementById("foodCalories").value = "";
+
+    renderFoodList();
+    updateSummary();
+    saveUserData();
+}
+
+function removeFood(index) {
+    foods.splice(index, 1);
+    renderFoodList();
+    updateSummary();
+    saveUserData();
+}
+
+function renderFoodList() {
+    const foodListDiv = document.getElementById("foodList");
+    foodListDiv.innerHTML = "";
+
+    foods.forEach((food, index) => {
+        const div = document.createElement("div");
+        div.className = "food-item";
+        div.innerHTML = `
+            <span>🍽️ ${food.meal}: ${food.name} - ${food.calories} kcal</span>
+            <button onclick="removeFood(${index})">ลบ</button>
+        `;
+        foodListDiv.appendChild(div);
+    });
+}
+
+function updateSummary() {
+    const totalCalories = foods.reduce((sum, food) => sum + food.calories, 0);
+    const summaryDiv = document.getElementById("summary");
+
+    let message = `🔢 แคลอรี่รวมวันนี้: ${totalCalories} kcal`;
+
+    if (tdeeValue > 0) {
+        if (totalCalories > tdeeValue) {
+            message += `<br>⚠️ เกินเป้าหมาย ${Math.round(totalCalories - tdeeValue)} kcal`;
+        } else {
+            message += `<br>✅ ยังเหลืออีก ${Math.round(tdeeValue - totalCalories)} kcal`;
+        }
+    }
+
+    summaryDiv.innerHTML = message;
+}
+
+function clearAll() {
+    if (confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลทั้งหมด?")) {
+        foods = [];
+        tdeeValue = 0;
+        saveUserData();
+        renderFoodList();
+        document.getElementById("summary").innerHTML = "🔢 แคลอรี่รวมวันนี้: 0 kcal";
+        document.getElementById("result").innerText = "กรอกข้อมูลแล้วกดคำนวณ";
+    }
+}
+</script>
+
+</body>
+</html>
